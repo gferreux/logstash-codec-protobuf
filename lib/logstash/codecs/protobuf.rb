@@ -151,7 +151,7 @@ class LogStash::Codecs::Protobuf < LogStash::Codecs::Base
       result = Hash.new
       input.to_hash.each {|key, value|
         if @camelize
-          key = camelize(key.to_s)
+          key = camelize(key)
         end
         result[key] = pb3_deep_to_hash(value) # the key is required for the class lookup of enums.
       }      
@@ -164,7 +164,7 @@ class LogStash::Codecs::Protobuf < LogStash::Codecs::Base
       result = {}
       input.each {|key, value|
         if @camelize
-          key = camelize(key.to_s)
+          key = camelize(key)
         end
         result[key] = pb3_deep_to_hash(value)
       }
@@ -176,13 +176,12 @@ class LogStash::Codecs::Protobuf < LogStash::Codecs::Base
     result
   end
 
-  def camelize(string, uppercase_first_letter = false)
-    if uppercase_first_letter
-      string = string.sub(/^[a-z\d]*/) { $&.capitalize }
+  def camelize(key)
+    if key.to_s.include? "_"
+        key.to_s.gsub(/_(\w)/) { $1.upcase }
     else
-      string = string.sub(/^(?:(?=\b|[A-Z_])|\w)/) { $&.downcase }
+        key
     end
-    string.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
   end
 
   def pb3_encode_wrapper(event)
